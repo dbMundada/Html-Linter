@@ -1,0 +1,23 @@
+{
+  "name": "html-linter",
+  "version": "1.0.0",
+  "description": "html-linter for better html code",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dbMundada/Html-Linter.git"
+  },
+  "author": "Dattaprasad Mundada",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dbMundada/Html-Linter/issues"
+  },
+  "homepage": "https://github.com/dbMundada/Html-Linter#readme",
+
+  "dependencies": {
+      
+  }
+}
