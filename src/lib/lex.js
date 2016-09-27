@@ -1,8 +1,11 @@
 var TOKEN = require('./tokens'),
     tokens = [],
     pos = 0,
+    nodeStartPos = 1,
+    nodePos = 1,
     start = 0,
-    input = '';
+    input = '',
+    lineNum = 1;
 
 var lexer = {
     run: function (htmlString) {
@@ -51,6 +54,13 @@ var lexer = {
                 case '>':
                     lex.emit('CBRAC');
                     char = lex.next();
+                    console.log("After CBRAC: '", char, "'");
+                    if(char === '\n') {
+                        lineNum++;
+                        nodePos = 1;nodeStartPos = 1;
+                        lex.emit('NEWLINE');
+                        break;
+                    }
                     if (char.match(/([a-z]|[A-Z]|-| )/)) {
                         lex.lexText();
                     }
@@ -59,6 +69,8 @@ var lexer = {
                     lex.emit('SPACE');
                     break;
                 case '\n':
+                    lineNum++;
+                    nodePos = 1;nodeStartPos = 1;
                     lex.emit('NEWLINE');
                     break;
                 case '=':
@@ -73,9 +85,17 @@ var lexer = {
     },
 
     lexText: function () {
-        var lex = this;
-        console.log('Inside LEx Text');
-        while (lex.next() !== '<');
+        var lex = this, ch = '';
+        console.log('Inside Lex Text');
+        ch = lex.next()
+        while (ch !== '<') {
+            if(ch === '\n') {
+                lineNum++;
+                nodePos = 1;nodeStartPos = 1;
+                lex.emit('NEWLINE');
+            }
+            ch = lex.next()
+        }
         lex.back();
         lex.emit('TEXT');
     },
@@ -118,12 +138,13 @@ var lexer = {
         if (pos > input.length) {
             return;
         }
-        pos++;
+        pos++;nodePos++;
         console.log("Next: ", pos);
         return input.charAt(pos - 1);
     },
     back: function () {
         pos--;
+        nodePos--;
         console.log("Back: ", pos);
         return input.charAt(pos);
     },
@@ -132,13 +153,16 @@ var lexer = {
         return input.charAt(pos + n);
     },
     emit: function (tokenType) {
-        var tmp = start;
+        var tmp = start,
+            tmpNodePos = nodeStartPos;
+
         start = pos;
+        nodeStartPos = nodePos;
         console.log('Start: ', tmp, " POS: ", pos, " value: ", input.substring(tmp, pos));
         if (tokenType === 'COMMENT') {
-            tokens.push({ type: tokenType, value: input.substring(tmp+4, pos-3) });
+            tokens.push({ type: tokenType, value: input.substring(tmp+4, pos-3), lineNum: lineNum, pos: tmpNodePos });
         } else {
-            tokens.push({ type: tokenType, value: input.substring(tmp, pos) });
+            tokens.push({ type: tokenType, value: input.substring(tmp, pos), lineNum: lineNum, pos: tmpNodePos });
         }
     }
 };
